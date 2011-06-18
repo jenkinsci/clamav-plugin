@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 /**
  * ClamAv Scanner
+ * 
+ * @see http://www.clamav.net/doc/latest/html/node28.html
  * @author Seiji Sogabe
  */
 public class ClamAvScanner {
@@ -72,9 +74,6 @@ public class ClamAvScanner {
     }
 
     public ScanResult scan(File file) throws IOException {
-        if (file == null) {
-            throw new IllegalArgumentException("file is null.");
-        }
         return scan(new FileInputStream(file));
     }
 

@@ -1,8 +1,9 @@
 package org.jenkinsci.plugins.clamav.scanner;
 
 /**
- *
- * @author sogabe
+ * ScanResult class.
+ * 
+ * @author Seiji Sogabe
  */
 public class ScanResult {
 
