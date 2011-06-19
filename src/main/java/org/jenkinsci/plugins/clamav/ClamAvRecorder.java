@@ -22,7 +22,6 @@ import org.jenkinsci.plugins.clamav.scanner.ScanResult;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status.*;
 
 /**
  * ClamAvRecorder
@@ -30,7 +29,7 @@ import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status.*;
  * @author Seiji Sogabe
  */
 public class ClamAvRecorder extends Recorder {
-    
+
     private final String artifacts;
 
     public String getArtifacts() {
@@ -60,34 +59,32 @@ public class ClamAvRecorder extends Recorder {
         FilePath[] targets = ws.list(artifacts, null);
         for (FilePath target : targets) {
             ScanResult r = scanner.scan(target.read());
-            StringBuilder msg = new StringBuilder("[ClamAv] Scanned " + target.getRemote() + " ");
-            switch (r.getStatus()) {
-                case ERROR:
-                    msg.append("ERROR : ").append(r.getMessage());
-                    break;
-                case FAILED:
-                    msg.append("FAILED : ").append(r.getMessage());
-                default:
-                    msg.append("PASSED");
-            }
-            logger.println(msg.toString());
+            logger.println(buildMessage(target, r));
         }
-        logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");    
-        
+        logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");
+
         return true;
+    }
+
+    private String buildMessage(FilePath target, ScanResult r) {
+        StringBuilder msg = new StringBuilder("[ClamAv] Scanned ");
+        msg.append(target.getRemote());
+        msg.append(" ");
+        msg.append(r.toString());
+        return msg.toString();
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
-    
+
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private String host;
 
         private int port = 3310;
-        
+
         private int timeout = 5000;
 
         public String getHost() {
@@ -101,11 +98,11 @@ public class ClamAvRecorder extends Recorder {
         public int getTimeout() {
             return timeout;
         }
-        
+
         public DescriptorImpl() {
             load();
         }
-        
+
         @Override
         public String getDisplayName() {
             return "Check for viruses";
@@ -148,7 +145,7 @@ public class ClamAvRecorder extends Recorder {
             }
             return FormValidation.ok();
         }
-        
+
         /**
          * Check timeout
          * 

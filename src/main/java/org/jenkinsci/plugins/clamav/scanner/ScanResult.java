@@ -31,4 +31,15 @@ public class ScanResult {
     public Status getStatus() {
         return status;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(status);
+        if (!status.equals(Status.PASSED)) {
+            buf.append(" : ");
+            buf.append(getMessage());
+        }
+        return buf.toString();
+    }
 }
