@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.clamav;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -13,9 +14,11 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.clamav.scanner.ClamAvScanner;
+import org.jenkinsci.plugins.clamav.scanner.ScanResult;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -41,7 +44,31 @@ public class ClamAvRecorder extends Recorder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-        return super.perform(build, launcher, listener);
+
+        PrintStream logger = listener.getLogger();
+        logger.println("[ClamAv] " + build.getDisplayName());
+
+        FilePath ws = build.getWorkspace();
+        if (ws == null) {
+            return true;
+        }
+
+        DescriptorImpl d = (DescriptorImpl) getDescriptor();
+        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), 1000 * 30);
+
+        long start = System.currentTimeMillis();
+        FilePath[] targets = ws.list(artifacts, null);
+        for (FilePath target : targets) {
+            ScanResult r = scanner.scan(target.read());
+            if (ScanResult.Status.PASSED.equals(r.getStatus())) {
+                logger.println("[ClamAv] Scanned " + target.getRemote() + " PASSED");
+            } else {
+                logger.println("[ClamAv] Scanned " + target.getRemote() + " " + r.getSiganture() + " Found");
+            }
+        }
+        logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");    
+        
+        return true;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {

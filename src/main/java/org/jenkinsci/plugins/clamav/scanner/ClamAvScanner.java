@@ -23,7 +23,7 @@ public class ClamAvScanner {
 
     private static final int CHUNK_SIZE = 2048;
 
-    private static final int DEFAULT_TIMEOUT = 10;
+    private static final int DEFAULT_TIMEOUT = 5000;
 
     private static final int DEFAULT_PORT = 3310;
 
@@ -74,6 +74,9 @@ public class ClamAvScanner {
     }
 
     public ScanResult scan(File file) throws IOException {
+        if (file == null) {
+            throw new IllegalArgumentException("file is null.");
+        }
         return scan(new FileInputStream(file));
     }
 
