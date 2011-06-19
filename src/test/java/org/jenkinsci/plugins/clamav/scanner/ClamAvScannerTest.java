@@ -50,7 +50,7 @@ public class ClamAvScannerTest {
         ScanResult result = target.scan(is);
         assertNotNull(result);
         assertEquals(ScanResult.Status.FAILED, result.getStatus());
-        assertEquals("Eicar-Test-Signature", result.getSiganture());
+        assertEquals("Eicar-Test-Signature", result.getMessage());
     }
 
     /**

@@ -22,6 +22,7 @@ import org.jenkinsci.plugins.clamav.scanner.ScanResult;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status.*;
 
 /**
  * ClamAvRecorder
@@ -46,7 +47,6 @@ public class ClamAvRecorder extends Recorder {
             throws InterruptedException, IOException {
 
         PrintStream logger = listener.getLogger();
-        logger.println("[ClamAv] " + build.getDisplayName());
 
         FilePath ws = build.getWorkspace();
         if (ws == null) {
@@ -54,17 +54,23 @@ public class ClamAvRecorder extends Recorder {
         }
 
         DescriptorImpl d = (DescriptorImpl) getDescriptor();
-        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), 1000 * 30);
+        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), 1000);
 
         long start = System.currentTimeMillis();
         FilePath[] targets = ws.list(artifacts, null);
         for (FilePath target : targets) {
             ScanResult r = scanner.scan(target.read());
-            if (ScanResult.Status.PASSED.equals(r.getStatus())) {
-                logger.println("[ClamAv] Scanned " + target.getRemote() + " PASSED");
-            } else {
-                logger.println("[ClamAv] Scanned " + target.getRemote() + " " + r.getSiganture() + " Found");
+            StringBuilder msg = new StringBuilder("[ClamAv] Scanned " + target.getRemote() + " ");
+            switch (r.getStatus()) {
+                case ERROR:
+                    msg.append("ERROR : ").append(r.getMessage());
+                    break;
+                case FAILED:
+                    msg.append("FAILED : ").append(r.getMessage());
+                default:
+                    msg.append("PASSED");
             }
+            logger.println(msg.toString());
         }
         logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");    
         

@@ -8,24 +8,24 @@ package org.jenkinsci.plugins.clamav.scanner;
 public class ScanResult {
 
     public enum Status {
-        PASSED, FAILED
+        PASSED, FAILED, ERROR
     }
 
     private Status status;
 
-    private String siganture;
-
+    private String message;
+    
     public ScanResult(Status status) {
         this(status, null);
     }
 
-    public ScanResult(Status status, String siganture) {
+    public ScanResult(Status status, String message) {
         this.status = status;
-        this.siganture = siganture;
+        this.message = message;
     }
 
-    public String getSiganture() {
-        return siganture;
+    public String getMessage() {
+        return message;
     }
 
     public Status getStatus() {

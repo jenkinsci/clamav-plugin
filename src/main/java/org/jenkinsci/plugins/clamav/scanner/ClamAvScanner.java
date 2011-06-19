@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Logger;
+import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status;
 
 /**
  * ClamAv Scanner
@@ -61,16 +62,21 @@ public class ClamAvScanner {
         return "PONG\0".equals(response);
     }
 
-    public ScanResult scan(InputStream file) throws IOException {
+    public ScanResult scan(InputStream file) {
         if (file == null) {
             throw new IllegalArgumentException("file is null.");
         }
-        String response = instream(file);
+        String response;
+        try {
+            response = instream(file);
+        } catch (IOException e) {
+            return new ScanResult(Status.ERROR, e.getMessage());
+        }
         if (response.contains("FOUND\0")) {
             String sig = response.substring("stream: ".length(), response.lastIndexOf("FOUND") - 1);
-            return new ScanResult(ScanResult.Status.FAILED, sig);
+            return new ScanResult(Status.FAILED, sig);
         }
-        return new ScanResult(ScanResult.Status.PASSED);
+        return new ScanResult(Status.PASSED);
     }
 
     public ScanResult scan(File file) throws IOException {
