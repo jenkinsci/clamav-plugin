@@ -31,8 +31,6 @@ import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status.*;
  */
 public class ClamAvRecorder extends Recorder {
     
-    private static int TIMEOUT = 1000 * 30;
-
     private final String artifacts;
 
     public String getArtifacts() {
@@ -56,7 +54,7 @@ public class ClamAvRecorder extends Recorder {
         }
 
         DescriptorImpl d = (DescriptorImpl) getDescriptor();
-        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), TIMEOUT);
+        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
 
         long start = System.currentTimeMillis();
         FilePath[] targets = ws.list(artifacts, null);
@@ -89,6 +87,8 @@ public class ClamAvRecorder extends Recorder {
         private String host;
 
         private int port = 3310;
+        
+        private int timeout = 5000;
 
         public String getHost() {
             return host;
@@ -98,6 +98,10 @@ public class ClamAvRecorder extends Recorder {
             return port;
         }
 
+        public int getTimeout() {
+            return timeout;
+        }
+        
         public DescriptorImpl() {
             load();
         }
@@ -116,6 +120,7 @@ public class ClamAvRecorder extends Recorder {
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             host = Util.fixEmptyAndTrim(json.getString("host"));
             port = json.optInt("port", 3310);
+            timeout = json.optInt("timeout", 5000);
             save();
             return super.configure(req, json);
         }
@@ -142,6 +147,18 @@ public class ClamAvRecorder extends Recorder {
                 return FormValidation.error("No response from " + host + ":" + port);
             }
             return FormValidation.ok();
+        }
+        
+        /**
+         * Check timeout
+         * 
+         * exposed to global.jelly
+         * 
+         * @param value timeout
+         * @return {@link FormValidation}
+         */
+        public FormValidation doCheckTimeout(@QueryParameter String value) {
+            return FormValidation.validateNonNegativeInteger(value);
         }
 
         /**
