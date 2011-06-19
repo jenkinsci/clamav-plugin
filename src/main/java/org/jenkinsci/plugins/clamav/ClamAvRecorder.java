@@ -30,6 +30,8 @@ import static org.jenkinsci.plugins.clamav.scanner.ScanResult.Status.*;
  * @author Seiji Sogabe
  */
 public class ClamAvRecorder extends Recorder {
+    
+    private static int TIMEOUT = 1000 * 30;
 
     private final String artifacts;
 
@@ -54,7 +56,7 @@ public class ClamAvRecorder extends Recorder {
         }
 
         DescriptorImpl d = (DescriptorImpl) getDescriptor();
-        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), 1000);
+        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), TIMEOUT);
 
         long start = System.currentTimeMillis();
         FilePath[] targets = ws.list(artifacts, null);
