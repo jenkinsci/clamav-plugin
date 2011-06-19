@@ -81,7 +81,16 @@ public class ClamAvRecorder extends Recorder {
             return true;
         }
 
-        public FormValidation doPing(@QueryParameter String host,@QueryParameter int port) {
+        /**
+         * Check ClamAV host.
+         * 
+         * exposed to global.jelly.
+         * 
+         * @param host host name or IP address of ClamAV Host.
+         * @param port port of ClamAv host. 
+         * @return {@link FormValidation} 
+         */
+        public FormValidation doCheckHost(@QueryParameter String host,@QueryParameter int port) {
             host = Util.fixEmptyAndTrim(host);
             if (host == null) {
                 return FormValidation.ok();
@@ -94,6 +103,21 @@ public class ClamAvRecorder extends Recorder {
                 return FormValidation.error("No response from " + host + ":" + port);
             }
             return FormValidation.ok();
+        }
+        
+        /**
+         * Check artifacts and host.
+         * 
+         * exposed to config.jelly.
+         * 
+         * @param artifacts
+         * @return {@link FormValidation} 
+         */
+        public FormValidation doCheck(StaplerRequest req, @QueryParameter String artifacts) {
+            if (host == null) {
+                return FormValidation.errorWithMarkup(Messages.ClamAvRecorder_NotHostConfigured(req.getContextPath()));
+            }
+            return FormValidation.validateRequired(artifacts);
         }
 
         @Override
