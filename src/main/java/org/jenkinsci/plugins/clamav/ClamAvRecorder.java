@@ -39,7 +39,7 @@ public class ClamAvRecorder extends Recorder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) 
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
         return super.perform(build, launcher, listener);
     }
@@ -47,7 +47,7 @@ public class ClamAvRecorder extends Recorder {
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
-
+    
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -63,6 +63,10 @@ public class ClamAvRecorder extends Recorder {
             return port;
         }
 
+        public DescriptorImpl() {
+            load();
+        }
+        
         @Override
         public String getDisplayName() {
             return "Check for viruses";
@@ -78,7 +82,7 @@ public class ClamAvRecorder extends Recorder {
             host = Util.fixEmptyAndTrim(json.getString("host"));
             port = json.optInt("port", 3310);
             save();
-            return true;
+            return super.configure(req, json);
         }
 
         /**
@@ -90,7 +94,7 @@ public class ClamAvRecorder extends Recorder {
          * @param port port of ClamAv host. 
          * @return {@link FormValidation} 
          */
-        public FormValidation doCheckHost(@QueryParameter String host,@QueryParameter int port) {
+        public FormValidation doCheckHost(@QueryParameter String host, @QueryParameter int port) {
             host = Util.fixEmptyAndTrim(host);
             if (host == null) {
                 return FormValidation.ok();
@@ -104,7 +108,7 @@ public class ClamAvRecorder extends Recorder {
             }
             return FormValidation.ok();
         }
-        
+
         /**
          * Check artifacts and host.
          * 
