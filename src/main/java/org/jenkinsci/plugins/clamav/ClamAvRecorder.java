@@ -30,15 +30,22 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class ClamAvRecorder extends Recorder {
 
-    private final String artifacts;
+    private final String includes;
+    
+    private final String excludes;
 
-    public String getArtifacts() {
-        return artifacts;
+    public String getIncludes() {
+        return includes;
     }
 
+    public String getExcludes() {
+        return excludes;
+    }
+    
     @DataBoundConstructor
-    public ClamAvRecorder(String artifacts) {
-        this.artifacts = artifacts;
+    public ClamAvRecorder(String includes, String excludes) {
+        this.includes = includes;
+        this.excludes = excludes;
     }
 
     @Override
@@ -56,7 +63,7 @@ public class ClamAvRecorder extends Recorder {
         ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
 
         long start = System.currentTimeMillis();
-        FilePath[] targets = ws.list(artifacts, null);
+        FilePath[] targets = ws.list(includes, excludes);
         for (FilePath target : targets) {
             ScanResult r = scanner.scan(target.read());
             logger.println(buildMessage(target, r));
@@ -159,18 +166,18 @@ public class ClamAvRecorder extends Recorder {
         }
 
         /**
-         * Check artifacts and host.
+         * Check includes and host.
          * 
          * exposed to config.jelly.
          * 
-         * @param artifacts
+         * @param includes
          * @return {@link FormValidation} 
          */
-        public FormValidation doCheck(StaplerRequest req, @QueryParameter String artifacts) {
+        public FormValidation doCheckIncludes(StaplerRequest req, @QueryParameter String includes) {
             if (host == null) {
                 return FormValidation.errorWithMarkup(Messages.ClamAvRecorder_NotHostConfigured(req.getContextPath()));
             }
-            return FormValidation.validateRequired(artifacts);
+            return FormValidation.validateRequired(includes);
         }
 
         @Override
