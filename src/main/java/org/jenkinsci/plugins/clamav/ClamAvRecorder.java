@@ -8,6 +8,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Result;
+import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -15,6 +17,10 @@ import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.clamav.scanner.ClamAvScanner;
@@ -31,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class ClamAvRecorder extends Recorder {
 
     private final String includes;
-    
+
     private final String excludes;
 
     public String getIncludes() {
@@ -41,11 +47,11 @@ public class ClamAvRecorder extends Recorder {
     public String getExcludes() {
         return excludes;
     }
-    
+
     @DataBoundConstructor
     public ClamAvRecorder(String includes, String excludes) {
-        this.includes = includes;
-        this.excludes = excludes;
+        this.includes = Util.fixEmptyAndTrim(includes);
+        this.excludes = Util.fixEmptyAndTrim(excludes);
     }
 
     @Override
@@ -56,21 +62,58 @@ public class ClamAvRecorder extends Recorder {
 
         FilePath ws = build.getWorkspace();
         if (ws == null) {
-            return true;
+            return false;
         }
-
         DescriptorImpl d = (DescriptorImpl) getDescriptor();
-        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
+        if (d.getHost() == null) {
+            return false;
+        } 
 
+        // get artifacts from global and project configuration.
+        FilePath[] artifacts1 = new FilePath[0];
+        ArtifactArchiver archiver = build.getProject().getPublishersList().get(ArtifactArchiver.class);
+        if (archiver != null) {
+            artifacts1 = getArtifacts(ws, archiver.getArtifacts(), archiver.getExcludes());
+        }
+        FilePath[] artifacts2 = getArtifacts(ws, includes, excludes);
+        FilePath[] artifacts = mergeArtifacts(artifacts1, artifacts2);
+
+        // scan artifacts
+        ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
         long start = System.currentTimeMillis();
-        FilePath[] targets = ws.list(includes, excludes);
-        for (FilePath target : targets) {
-            ScanResult r = scanner.scan(target.read());
-            logger.println(buildMessage(target, r));
+        for (FilePath file : artifacts) {
+            ScanResult r = scanner.scan(file.read());
+            if (!(r.getStatus().equals(ScanResult.Status.PASSED))) {
+                build.setResult(Result.FAILURE);
+            }
+            logger.println(buildMessage(file, r));
         }
         logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");
 
         return true;
+    }
+
+    private FilePath[] getArtifacts(FilePath workspace, String includes, String excludes)
+            throws IOException, InterruptedException {
+        if (includes == null) {
+            return new FilePath[0];
+        }
+        return workspace.list(includes, excludes);
+    }
+
+    private FilePath[] mergeArtifacts(FilePath[] src, FilePath[] dst) {
+        Map<String, FilePath> map = new TreeMap<String, FilePath>();
+        for (FilePath f : src) {
+            map.put(f.getRemote(), f);
+        }
+        for (FilePath f : dst) {
+            map.put(f.getRemote(), f);
+        }
+        List<FilePath> l = new ArrayList<FilePath>();
+        for (String key : map.keySet()) {
+            l.add(map.get(key));
+        }
+        return l.toArray(new FilePath[0]);
     }
 
     private String buildMessage(FilePath target, ScanResult r) {
@@ -94,6 +137,8 @@ public class ClamAvRecorder extends Recorder {
 
         private int timeout = 5000;
 
+        private boolean scanArchivedArtifacts;
+
         public String getHost() {
             return host;
         }
@@ -104,6 +149,10 @@ public class ClamAvRecorder extends Recorder {
 
         public int getTimeout() {
             return timeout;
+        }
+
+        public boolean isScanArchivedArtifacts() {
+            return scanArchivedArtifacts;
         }
 
         public DescriptorImpl() {
@@ -125,6 +174,7 @@ public class ClamAvRecorder extends Recorder {
             host = Util.fixEmptyAndTrim(json.getString("host"));
             port = json.optInt("port", 3310);
             timeout = json.optInt("timeout", 5000);
+            scanArchivedArtifacts = json.optBoolean("scanArchivedArtifacts");
             save();
             return super.configure(req, json);
         }
@@ -138,17 +188,25 @@ public class ClamAvRecorder extends Recorder {
          * @param port port of ClamAv host. 
          * @return {@link FormValidation} 
          */
-        public FormValidation doCheckHost(@QueryParameter String host, @QueryParameter int port) {
+        public FormValidation doCheckHost(@QueryParameter String host, @QueryParameter String port) {
             host = Util.fixEmptyAndTrim(host);
-            if (host == null) {
+            port = Util.fixEmptyAndTrim(port);
+            if (host == null || port == null) {
                 return FormValidation.ok();
             }
-            if (port < 0 || port > 65535) {
+            
+            int p;
+            try {
+                p = Integer.parseInt(port);
+            } catch (NumberFormatException e) {
+                return FormValidation.error(e.getMessage());
+            }
+            if (p < 0 || p > 65535) {
                 return FormValidation.error("Port should be in the range from 0 to 65535");
             }
-            ClamAvScanner scanner = new ClamAvScanner(host, port);
+            ClamAvScanner scanner = new ClamAvScanner(host, p);
             if (!scanner.ping()) {
-                return FormValidation.error("No response from " + host + ":" + port);
+                return FormValidation.error("No response from " + host + ":" + p);
             }
             return FormValidation.ok();
         }
@@ -163,21 +221,6 @@ public class ClamAvRecorder extends Recorder {
          */
         public FormValidation doCheckTimeout(@QueryParameter String value) {
             return FormValidation.validateNonNegativeInteger(value);
-        }
-
-        /**
-         * Check includes and host.
-         * 
-         * exposed to config.jelly.
-         * 
-         * @param includes
-         * @return {@link FormValidation} 
-         */
-        public FormValidation doCheckIncludes(StaplerRequest req, @QueryParameter String includes) {
-            if (host == null) {
-                return FormValidation.errorWithMarkup(Messages.ClamAvRecorder_NotHostConfigured(req.getContextPath()));
-            }
-            return FormValidation.validateRequired(includes);
         }
 
         @Override
