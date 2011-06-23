@@ -49,7 +49,7 @@ public class ClamAvScannerTest {
         InputStream is = getClass().getResourceAsStream("eicar.com.txt");        
         ScanResult result = target.scan(is);
         assertNotNull(result);
-        assertEquals(ScanResult.Status.FAILED, result.getStatus());
+        assertEquals(ScanResult.Status.INFECTED, result.getStatus());
         assertEquals("Eicar-Test-Signature", result.getMessage());
     }
 
