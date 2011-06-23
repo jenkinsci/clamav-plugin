@@ -8,7 +8,7 @@ package org.jenkinsci.plugins.clamav.scanner;
 public class ScanResult {
 
     public enum Status {
-        PASSED, FAILED, ERROR
+        PASSED, INFECTED, ERROR
     }
 
     private Status status;

@@ -74,7 +74,7 @@ public class ClamAvScanner {
         }
         if (response.contains("FOUND\0")) {
             String sig = response.substring("stream: ".length(), response.lastIndexOf("FOUND") - 1);
-            return new ScanResult(Status.FAILED, sig);
+            return new ScanResult(Status.INFECTED, sig);
         }
         return new ScanResult(Status.PASSED);
     }
