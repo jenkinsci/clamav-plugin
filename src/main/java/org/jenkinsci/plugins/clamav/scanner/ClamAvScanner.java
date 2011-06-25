@@ -70,7 +70,7 @@ public class ClamAvScanner {
         try {
             response = instream(file);
         } catch (IOException e) {
-            return new ScanResult(Status.ERROR, e.getMessage());
+            return new ScanResult(Status.WARNING, e.getMessage());
         }
         if (response.contains("FOUND\0")) {
             String sig = response.substring("stream: ".length(), response.lastIndexOf("FOUND") - 1);

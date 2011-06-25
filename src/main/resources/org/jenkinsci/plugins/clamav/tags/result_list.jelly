@@ -1,0 +1,35 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <table class="clamav sortable" style="width: 800px;">
+        <thead>
+            <tr>
+                <th>${%File}</th>
+                <th>${%Status}</th>
+                <th>${%Description}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <j:forEach var="r" items="${action.results}">
+                <tr>
+                    <td>${r.file}</td>
+                    <td style="text-align: center;" data="${r.status}">
+                        <j:choose>
+                            <j:when test="${r.status == 'PASSED'}">
+                                <j:set var="image" value="passed_16x16.png" />
+                            </j:when>
+                            <j:when test="${r.status == 'INFECTED'}">
+                                <j:set var="image" value="infected_16x16.png" />
+                            </j:when>
+                            <j:otherwise>
+                                <j:set var="image" value="warning_16x16.png" />
+                            </j:otherwise>
+                        </j:choose>
+                        <img src="${rootURL}/plugin/clamav/img/${image}" alt="${r.status}" title="${r.status}" />
+                    </td>
+                    <td>${r.description}</td>
+                </tr>
+            </j:forEach>
+        </tbody>
+    </table>
+</j:jelly>

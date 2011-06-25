@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
+         xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <table class="clamav" style="width: 300;">
+        <tr>
+            <th><img src="${rootURL}/plugin/clamav/img/passed_16x16.png" alt="${%Passed}" />${%Passed}</th>
+            <th><img src="${rootURL}/plugin/clamav/img/infected_16x16.png" alt="${%Infected}" />${%Infected}</th>
+            <th><img src="${rootURL}/plugin/clamav/img/warning_16x16.png" alt="${%Warning}" />${%Warning}</th>
+        </tr>    
+        <tr>
+            <td style="text-align: right;">${action.passed} </td>
+            <td style="text-align: right;">${action.infected}</td>
+            <td style="text-align: right;">${action.warning}</td>
+        </tr>    
+    </table>   
+</j:jelly>

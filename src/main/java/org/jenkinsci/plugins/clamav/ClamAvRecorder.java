@@ -6,6 +6,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Result;
@@ -18,6 +19,8 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -67,7 +70,7 @@ public class ClamAvRecorder extends Recorder {
         DescriptorImpl d = (DescriptorImpl) getDescriptor();
         if (d.getHost() == null) {
             return false;
-        } 
+        }
 
         // get artifacts from global and project configuration.
         FilePath[] artifacts1 = new FilePath[0];
@@ -79,16 +82,20 @@ public class ClamAvRecorder extends Recorder {
         FilePath[] artifacts = mergeArtifacts(artifacts1, artifacts2);
 
         // scan artifacts
+        List<ClamAvResult> results = new ArrayList<ClamAvResult>();
         ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
         long start = System.currentTimeMillis();
         for (FilePath file : artifacts) {
             ScanResult r = scanner.scan(file.read());
+            results.add(new ClamAvResult(file.getName(), r.getStatus(), r.getMessage()));
             if (!(r.getStatus().equals(ScanResult.Status.PASSED))) {
-                build.setResult(Result.FAILURE);
+                build.setResult(Result.UNSTABLE);
             }
             logger.println(buildMessage(file, r));
         }
         logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");
+
+        build.getActions().add(new ClamAvBuildAction(build, results));
 
         return true;
     }
@@ -126,6 +133,11 @@ public class ClamAvRecorder extends Recorder {
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
+    }
+
+    @Override
+    public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
+        return Collections.singletonList(new ClamAvProjectAction(project));
     }
 
     @Extension
@@ -194,7 +206,7 @@ public class ClamAvRecorder extends Recorder {
             if (host == null || port == null) {
                 return FormValidation.ok();
             }
-            
+
             int p;
             try {
                 p = Integer.parseInt(port);

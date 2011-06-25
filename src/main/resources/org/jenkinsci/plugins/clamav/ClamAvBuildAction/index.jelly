@@ -1,0 +1,19 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout xmlns:clamav="/org/jenkinsci/plugins/clamav/tags" css="/plugin/clamav/css/style.css" 
+              title="${%ClamAV Report}">    
+        <st:include it="${it.build}" page="sidepanel.jelly" />
+        <l:main-panel>
+            <j:set var="action" value="${it}" />      
+            <h1>${%ClamAV Virus Report}</h1>
+            
+            <h2>${%Summary}</h2>
+            <clamav:result_summary />
+
+            <h2>${%Result}</h2>
+            <clamav:result_list />
+        
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
