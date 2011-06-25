@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.clamav;
 
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Actionable;
 import hudson.model.ProminentProjectAction;
