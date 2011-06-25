@@ -3,11 +3,11 @@
          xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
          xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <t:summary icon="/plugin/clamav/img/clamav_48x48.png">
-        <div><a href="clamav">ClamAV Virus Report</a></div>
+        <div><a href="clamav">${%ClamAV Virus Report}</a></div>
         <ul>
-            <li style="list-style:url(${rootURL}/plugin/clamav/img/passed_16x16.png);">Passed: ${it.passed} </li>
-            <li style="list-style:url(${rootURL}/plugin/clamav/img/infected_16x16.png);">Infected: ${it.infected} </li>
-            <li style="list-style:url(${rootURL}/plugin/clamav/img/warning_16x16.png);">Waring: ${it.warning}</li>
+            <li style="list-style:url(${rootURL}/plugin/clamav/img/passed_16x16.png);">${%Passed}: ${it.passed} </li>
+            <li style="list-style:url(${rootURL}/plugin/clamav/img/infected_16x16.png);">${%Infected}: ${it.infected} </li>
+            <li style="list-style:url(${rootURL}/plugin/clamav/img/warning_16x16.png);">${%Warning}: ${it.warning}</li>
         </ul>    
     </t:summary>
 

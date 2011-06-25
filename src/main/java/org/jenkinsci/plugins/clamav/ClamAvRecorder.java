@@ -119,7 +119,7 @@ public class ClamAvRecorder extends Recorder {
             }
             logger.println(buildMessage(file, r));
         }
-        logger.println("[ClamAv] " + (System.currentTimeMillis() - start) + "ms took.");
+        logger.println("[ClamAV] " + (System.currentTimeMillis() - start) + "ms took.");
 
         build.getActions().add(new ClamAvBuildAction(build, results));
 
@@ -152,7 +152,7 @@ public class ClamAvRecorder extends Recorder {
     }
 
     private String buildMessage(FilePath target, ScanResult r) {
-        StringBuilder msg = new StringBuilder("[ClamAv] Scanned ");
+        StringBuilder msg = new StringBuilder("[ClamAV] Scanned ");
         msg.append(target.getRemote());
         msg.append(" ");
         msg.append(r.toString());
@@ -201,7 +201,7 @@ public class ClamAvRecorder extends Recorder {
 
         @Override
         public String getDisplayName() {
-            return "Check for viruses";
+            return Messages.ClamAvRecorder_DisplayName();
         }
 
         @Override
@@ -242,11 +242,11 @@ public class ClamAvRecorder extends Recorder {
                 return FormValidation.error(e.getMessage());
             }
             if (p < 0 || p > 65535) {
-                return FormValidation.error("Port should be in the range from 0 to 65535");
+                return FormValidation.error(Messages.ClamAvRecorder_doCheckHost_OutOfRangePort());
             }
             ClamAvScanner scanner = new ClamAvScanner(host, p);
             if (!scanner.ping()) {
-                return FormValidation.error("No response from " + host + ":" + p);
+                return FormValidation.error(Messages.ClamAvRecorder_doCheckHost_NoResponse(host, p));
             }
             return FormValidation.ok();
         }

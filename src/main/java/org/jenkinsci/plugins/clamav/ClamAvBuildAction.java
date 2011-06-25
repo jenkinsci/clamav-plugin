@@ -93,7 +93,7 @@ public class ClamAvBuildAction implements Action {
     }
 
     public String getDisplayName() {
-        return "ClamAV Virus Report";
+        return Messages.ClamAvBuildAction_DisplayName();
     }
 
     public String getIconFileName() {

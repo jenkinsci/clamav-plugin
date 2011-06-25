@@ -49,7 +49,7 @@ public class ClamAvProjectAction extends Actionable implements ProminentProjectA
     }
         
     public String getDisplayName() {
-        return "ClamAV Virus Report";
+        return Messages.ClamAvProjectAction_DisplayName();
     }
 
     public String getSearchUrl() {
