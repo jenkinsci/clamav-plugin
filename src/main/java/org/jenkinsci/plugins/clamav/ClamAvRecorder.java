@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.clamav;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -72,13 +73,15 @@ public class ClamAvRecorder extends Recorder {
             return false;
         }
 
+        EnvVars envVars = build.getEnvironment(listener); 
+        
         // get artifacts from global and project configuration.
         FilePath[] artifacts1 = new FilePath[0];
         ArtifactArchiver archiver = build.getProject().getPublishersList().get(ArtifactArchiver.class);
         if (archiver != null) {
-            artifacts1 = getArtifacts(ws, archiver.getArtifacts(), archiver.getExcludes());
+            artifacts1 = getArtifacts(ws, envVars, archiver.getArtifacts(), archiver.getExcludes());
         }
-        FilePath[] artifacts2 = getArtifacts(ws, includes, excludes);
+        FilePath[] artifacts2 = getArtifacts(ws, envVars, includes, excludes);
         FilePath[] artifacts = mergeArtifacts(artifacts1, artifacts2);
 
         // scan artifacts
@@ -100,11 +103,13 @@ public class ClamAvRecorder extends Recorder {
         return true;
     }
 
-    private FilePath[] getArtifacts(FilePath workspace, String includes, String excludes)
+    private FilePath[] getArtifacts(FilePath workspace, EnvVars vars, String includes, String excludes)
             throws IOException, InterruptedException {
         if (includes == null) {
             return new FilePath[0];
         }
+        includes = vars.expand(includes);
+        excludes = vars.expand(excludes);
         return workspace.list(includes, excludes);
     }
 
