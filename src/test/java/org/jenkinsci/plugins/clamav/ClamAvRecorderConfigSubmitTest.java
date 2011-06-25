@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.clamav;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Hudson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +10,40 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-public class ClamAvRecorderTest extends HudsonTestCase {
+public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
+
+    public void testDefaultPort() throws Exception {
+        WebClient client = new WebClient();
+        client.setThrowExceptionOnFailingStatusCode(false);
+
+        HtmlPage p = client.goTo("configure");
+        HtmlForm f = p.getFormByName("config");
+        f.getInputByName("host").setValueAttribute("localhost");
+        f.getInputByName("port").setValueAttribute("");
+        submit(f);
+        
+        ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
+                Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
+        assertNotNull(desc);
+        assertEquals(3310, desc.getPort());
+    }
+    
+    public void testDefaultTimeout() throws Exception {
+        WebClient client = new WebClient();
+        client.setThrowExceptionOnFailingStatusCode(false);
+
+        HtmlPage p = client.goTo("configure");
+        HtmlForm f = p.getFormByName("config");
+        f.getInputByName("host").setValueAttribute("localhost");
+        f.getInputByName("port").setValueAttribute("3310");
+        f.getInputByName("timeout").setValueAttribute("");
+        submit(f);
+        
+        ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
+                Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
+        assertNotNull(desc);
+        assertEquals(5000, desc.getTimeout());
+    }
 
     public void testDoCheckHost() throws Exception {
         MockServer mockServer = new MockServer(9999);
@@ -25,6 +59,9 @@ public class ClamAvRecorderTest extends HudsonTestCase {
             p.wait(500);
         }
         assertTrue(!p.asText().contains("No response from "));
+        ClamAvRecorder.DescriptorImpl rec = (ClamAvRecorder.DescriptorImpl) 
+                Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
+        assertNotNull(rec);
     }
 
     public void testDoCheckHost_NoHost() throws Exception {
