@@ -5,6 +5,7 @@ What is this?
 -------------
  This plugin allows you to check viruses for archived artifacts with [ClamAV](http://www.clamav.net/).
 
+ ![ClamAV and Jenkins](doc/ClamAV.png)
 
 What is "ClamAV"?
 ------------------
