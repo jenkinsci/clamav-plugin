@@ -65,7 +65,7 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
                 Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
         assertNotNull(desc);
-        assertEquals(5000, desc.getTimeout());
+        assertEquals(10000, desc.getTimeout());
     }
 
     public void testDoCheckHost() throws Exception {

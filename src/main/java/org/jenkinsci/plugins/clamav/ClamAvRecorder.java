@@ -175,7 +175,7 @@ public class ClamAvRecorder extends Recorder {
 
         private int port = 3310;
 
-        private int timeout = 5000;
+        private int timeout = 10000;
 
         private boolean scanArchivedArtifacts;
 
@@ -213,7 +213,7 @@ public class ClamAvRecorder extends Recorder {
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             host = Util.fixEmptyAndTrim(json.getString("host"));
             port = json.optInt("port", 3310);
-            timeout = json.optInt("timeout", 5000);
+            timeout = json.optInt("timeout", 10000);
             scanArchivedArtifacts = json.optBoolean("scanArchivedArtifacts");
             save();
             return super.configure(req, json);
