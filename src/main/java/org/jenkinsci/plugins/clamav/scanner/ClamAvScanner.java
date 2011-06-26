@@ -162,6 +162,9 @@ public class ClamAvScanner {
             byte[] buf = new byte[CHUNK_SIZE];
             while (read == CHUNK_SIZE) {
                 read = file.read(buf);
+                if (read == -1) {
+                    break;
+                }
                 dos.writeInt(read);
                 dos.write(buf, 0, read);
             }
