@@ -265,6 +265,21 @@ public class ClamAvRecorder extends Recorder {
             return FormValidation.validateNonNegativeInteger(value);
         }
 
+        /**
+         * Check includes option.
+         * 
+         * if "Scan archived artifacts" option is not specified, "includes" is
+         * mandatory.
+         * 
+         * @param value includes
+         * @return {@link FormValidation}
+         */
+        public FormValidation doCheckIncludes(@QueryParameter String value) {
+            if (!isScanArchivedArtifacts())
+                return FormValidation.validateRequired(value);
+            return FormValidation.ok();
+        }
+        
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> type) {
             return true;
