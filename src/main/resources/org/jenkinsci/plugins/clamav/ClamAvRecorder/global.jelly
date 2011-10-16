@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:section title="${%ClamAV}">
         <f:entry title="${%Host}" field="host">
-            <f:textbox name="host" checkUrl="'descriptorByName/ClamAvRecorder/checkHost?host='+encodeURIComponent(this.value)+'&amp;port='+encodeURIComponent(this.form.elements['port'].value)" />
+            <f:textbox name="host" />
         </f:entry>
         <f:entry title="${%Port}" field="port">
             <f:textbox name="port" onchange="Form.findMatchingInput(this,'host').onchange()" />
@@ -12,7 +12,7 @@
         </f:entry>    
         <f:advanced>
             <f:entry title="${%Timeout}" field="timeout">
-                <f:textbox name="timeout" checkUrl="'descriptorByName/ClamAvRecorder/checkTimeout?value='+encodeURIComponent(this.value)" />
+                <f:textbox name="timeout" />
             </f:entry>
         </f:advanced>
     </f:section>
