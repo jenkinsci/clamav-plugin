@@ -113,7 +113,7 @@ public class ClamAvRecorder extends Recorder {
         long start = System.currentTimeMillis();
         for (FilePath file : artifacts) {
             ScanResult r = scanner.scan(file.read());
-            results.add(new ClamAvResult(file.getName(), r.getStatus(), r.getMessage()));
+            results.add(new ClamAvResult(file.getRemote(), r.getStatus(), r.getMessage()));
             if (!(r.getStatus().equals(ScanResult.Status.PASSED))) {
                 build.setResult(Result.UNSTABLE);
             }
