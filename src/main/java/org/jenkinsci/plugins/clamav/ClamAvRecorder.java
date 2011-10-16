@@ -100,9 +100,11 @@ public class ClamAvRecorder extends Recorder {
         
         // get artifacts from global and project configuration.
         FilePath[] artifacts1 = new FilePath[0];
-        ArtifactArchiver archiver = build.getProject().getPublishersList().get(ArtifactArchiver.class);
-        if (archiver != null) {
-            artifacts1 = getArtifacts(ws, envVars, archiver.getArtifacts(), archiver.getExcludes() + "," + excludes);
+        if (d.isScanArchivedArtifacts()) {
+            ArtifactArchiver archiver = build.getProject().getPublishersList().get(ArtifactArchiver.class);
+            if (archiver != null) {
+                artifacts1 = getArtifacts(ws, envVars, archiver.getArtifacts(), archiver.getExcludes() + "," + excludes);
+            }
         }
         FilePath[] artifacts2 = getArtifacts(ws, envVars, includes, excludes);
         FilePath[] artifacts = mergeArtifacts(artifacts1, artifacts2);
