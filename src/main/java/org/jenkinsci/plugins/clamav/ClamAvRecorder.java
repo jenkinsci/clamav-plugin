@@ -40,6 +40,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -49,7 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+
 import net.sf.json.JSONObject;
+
 import org.jenkinsci.plugins.clamav.scanner.ClamAvScanner;
 import org.jenkinsci.plugins.clamav.scanner.ScanResult;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -119,7 +122,15 @@ public class ClamAvRecorder extends Recorder {
             if (!(r.getStatus().equals(ScanResult.Status.PASSED))) {
                 build.setResult(Result.UNSTABLE);
             }
-            logger.println(buildMessage(file, r));
+            if (!d.isConsoleTraceOnlyWarningsOrErrors()) {
+                // trace everything
+            	logger.println(buildMessage(file, r));
+            } else {
+            	// trace only warnings and errors
+            	if (r.getStatus() != ScanResult.Status.PASSED) {
+            		logger.println(buildMessage(file, r));
+            	}
+            }
         }
         logger.println("[ClamAV] " + (System.currentTimeMillis() - start) + "ms took.");
 
@@ -180,6 +191,8 @@ public class ClamAvRecorder extends Recorder {
         private int timeout = 10000;
 
         private boolean scanArchivedArtifacts;
+        
+        private boolean consoleTraceOnlyWarningsOrErrors;
 
         public String getHost() {
             return host;
@@ -195,6 +208,10 @@ public class ClamAvRecorder extends Recorder {
 
         public boolean isScanArchivedArtifacts() {
             return scanArchivedArtifacts;
+        }
+
+        public boolean isConsoleTraceOnlyWarningsOrErrors() {
+            return consoleTraceOnlyWarningsOrErrors;
         }
 
         public DescriptorImpl() {
@@ -217,6 +234,7 @@ public class ClamAvRecorder extends Recorder {
             port = json.optInt("port", 3310);
             timeout = json.optInt("timeout", 10000);
             scanArchivedArtifacts = json.optBoolean("scanArchivedArtifacts");
+            consoleTraceOnlyWarningsOrErrors = json.optBoolean("consoleTraceOnlyWarningsOrErrors");
             save();
             return super.configure(req, json);
         }
@@ -275,8 +293,9 @@ public class ClamAvRecorder extends Recorder {
          * @return {@link FormValidation}
          */
         public FormValidation doCheckIncludes(@QueryParameter String value) {
-            if (!isScanArchivedArtifacts())
+            if (!isScanArchivedArtifacts()) {
                 return FormValidation.validateRequired(value);
+            }
             return FormValidation.ok();
         }
         
