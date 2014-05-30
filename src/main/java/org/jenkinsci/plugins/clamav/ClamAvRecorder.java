@@ -90,6 +90,8 @@ public class ClamAvRecorder extends Recorder {
 
         PrintStream logger = listener.getLogger();
 
+        logger.println("[ClamAV] started scanning.");
+
         FilePath ws = build.getWorkspace();
         if (ws == null) {
             return false;
@@ -132,7 +134,7 @@ public class ClamAvRecorder extends Recorder {
             	}
             }
         }
-        logger.println("[ClamAV] " + (System.currentTimeMillis() - start) + "ms took.");
+        logger.println("[ClamAV] took " + (System.currentTimeMillis() - start) + "ms.");
 
         build.getActions().add(new ClamAvBuildAction(build, results));
 
