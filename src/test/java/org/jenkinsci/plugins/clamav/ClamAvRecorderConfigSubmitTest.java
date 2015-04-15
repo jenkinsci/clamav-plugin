@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.clamav;
 
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Hudson;
@@ -31,36 +32,51 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.last;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.JenkinsRule;
 
-public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
+public class ClamAvRecorderConfigSubmitTest  {
 
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    private WebClient webClient;
+
+    @Before
+    public void setUp() throws Exception {
+        webClient = j.createWebClient();
+        webClient.setCssEnabled(false);
+        webClient.setJavaScriptEnabled(true);
+        webClient.setThrowExceptionOnFailingStatusCode(false);
+    }
+
+    @Test
     public void testDefaultPort() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("");
-        submit(f);
+        HtmlForm form = webClient.goTo("configure").getFormByName("config");
+        form.getInputByName("host").setValueAttribute("localhost");
+        form.getInputByName("port").setValueAttribute("");
+        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
         
         ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
                 Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
         assertNotNull(desc);
         assertEquals(3310, desc.getPort());
     }
-    
-    public void testDefaultTimeout() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
 
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("3310");
-        f.getInputByName("timeout").setValueAttribute("");
-        submit(f);
+    @Test
+    public void testDefaultTimeout() throws Exception {
+        HtmlForm form = webClient.goTo("configure").getFormByName("config");
+        form.getInputByName("host").setValueAttribute("localhost");
+        form.getInputByName("port").setValueAttribute("3310");
+        form.getInputByName("timeout").setValueAttribute("");
+        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
         
         ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
                 Hudson.getInstance().getDescriptor(ClamAvRecorder.class);
@@ -68,16 +84,15 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertEquals(10000, desc.getTimeout());
     }
 
+    @Test
     public void testDoCheckHost() throws Exception {
         MockServer mockServer = new MockServer(9999);
         mockServer.start();
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("9999");
+ 
+        HtmlPage p = webClient.goTo("configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("host").setValueAttribute("localhost");
+        form.getInputByName("port").setValueAttribute("9999");
         synchronized (p) {
             p.wait(500);
         }
@@ -87,55 +102,48 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertNotNull(rec);
     }
 
+    @Test
     public void testDoCheckHost_NoHost() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("");
-        f.getInputByName("port").setValueAttribute("9999");
+        HtmlPage p = webClient.goTo("configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("host").setValueAttribute("");
+        form.getInputByName("port").setValueAttribute("9999");
         synchronized (p) {
             p.wait(500);
         }
         assertTrue(!p.asText().contains("No response from "));
     }
 
+    @Test
     public void testDoCheckHost_InvalidPort() throws Exception {
         MockServer mockServer = new MockServer(9999);
         mockServer.start();
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
 
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("9998");
+        HtmlPage p = webClient.goTo("configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("host").setValueAttribute("localhost");
+        form.getInputByName("port").setValueAttribute("9998");
         synchronized (p) {
             p.wait(500);
         }
         assertTrue(p.asText().contains("No response from "));
     }
 
+    @Test
     public void testDoCheckHost_NegativePort() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
-        HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("-1");
+        HtmlPage p = webClient.goTo("configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("host").setValueAttribute("localhost");
+        form.getInputByName("port").setValueAttribute("-1");
         synchronized (p) {
             p.wait(500);
         }
         assertTrue(p.asText().contains("Port should be in the range from 0 to 65535"));
     }
 
+    @Test
     public void testDoCheckHost_OutOfRangPort() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
+        HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
         f.getInputByName("host").setValueAttribute("localhost");
         f.getInputByName("port").setValueAttribute("65536");
@@ -145,11 +153,9 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertTrue(p.asText().contains("Port should be in the range from 0 to 65535"));
     }
 
+    @Test
     public void testDoCheckHost_NotIntegerPort() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
+        HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
         f.getInputByName("host").setValueAttribute("localhost");
         f.getInputByName("port").setValueAttribute("port");
@@ -159,14 +165,12 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertTrue(p.asText().contains("For input string: \"port\""));
     }
 
+    @Test
     public void testDoCheckTimeout_Timeout() throws Exception {
         MockServer mockServer = new MockServer(9999);
         mockServer.start();
 
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
+        HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
         f.getInputByName("host").setValueAttribute("localhost");
         f.getInputByName("port").setValueAttribute("9999");
@@ -177,11 +181,9 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertTrue(!p.asText().contains("Number may not be negative"));
     }
 
+    @Test
     public void testDoCheckTimeout_NegativeTimeout() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
+        HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
         f.getInputByName("host").setValueAttribute("localhost");
         f.getInputByName("port").setValueAttribute("9998");
@@ -192,11 +194,9 @@ public class ClamAvRecorderConfigSubmitTest extends HudsonTestCase {
         assertTrue(p.asText().contains("Number may not be negative"));
     }
 
+    @Test
     public void testDoCheckTimeout_NotIntegerTimeout() throws Exception {
-        WebClient client = new WebClient();
-        client.setThrowExceptionOnFailingStatusCode(false);
-
-        HtmlPage p = client.goTo("configure");
+        HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
         f.getInputByName("host").setValueAttribute("localhost");
         f.getInputByName("port").setValueAttribute("9998");
