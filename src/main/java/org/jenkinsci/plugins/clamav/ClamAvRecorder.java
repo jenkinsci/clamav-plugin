@@ -41,6 +41,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -114,7 +115,13 @@ public class ClamAvRecorder extends Recorder {
         ClamAvScanner scanner = new ClamAvScanner(d.getHost(), d.getPort(), d.getTimeout());
         long start = System.currentTimeMillis();
         for (FilePath file : artifacts) {
-            ScanResult r = scanner.scan(file.read());
+            InputStream is = file.read();
+            ScanResult r;
+            try {
+                r = scanner.scan(is);
+            } finally {
+                is.close();
+            }
             results.add(new ClamAvResult(file.getRemote(), r.getStatus(), r.getMessage()));
             if (!(r.getStatus().equals(ScanResult.Status.PASSED))) {
                 build.setResult(Result.UNSTABLE);
