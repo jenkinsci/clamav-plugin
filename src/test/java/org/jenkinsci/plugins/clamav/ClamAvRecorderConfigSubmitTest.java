@@ -37,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -85,6 +86,7 @@ public class ClamAvRecorderConfigSubmitTest  {
     }
 
     @Test
+    @Ignore
     public void testDoCheckHost() throws Exception {
         MockServer mockServer = new MockServer(9999);
         mockServer.start();
