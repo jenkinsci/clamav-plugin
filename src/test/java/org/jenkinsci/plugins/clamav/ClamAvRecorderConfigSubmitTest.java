@@ -23,9 +23,9 @@
  */
 package org.jenkinsci.plugins.clamav;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import hudson.model.Hudson;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,8 +61,8 @@ public class ClamAvRecorderConfigSubmitTest  {
     @Test
     public void testDefaultPort() throws Exception {
         HtmlForm form = webClient.goTo("configure").getFormByName("config");
-        form.getInputByName("host").setValueAttribute("localhost");
-        form.getInputByName("port").setValueAttribute("");
+        form.getInputByName("host").setValue("localhost");
+        form.getInputByName("port").setValue("");
         form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
         
         ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
@@ -74,9 +74,9 @@ public class ClamAvRecorderConfigSubmitTest  {
     @Test
     public void testDefaultTimeout() throws Exception {
         HtmlForm form = webClient.goTo("configure").getFormByName("config");
-        form.getInputByName("host").setValueAttribute("localhost");
-        form.getInputByName("port").setValueAttribute("3310");
-        form.getInputByName("timeout").setValueAttribute("");
+        form.getInputByName("host").setValue("localhost");
+        form.getInputByName("port").setValue("3310");
+        form.getInputByName("timeout").setValue("");
         form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
         
         ClamAvRecorder.DescriptorImpl desc = (ClamAvRecorder.DescriptorImpl) 
@@ -93,8 +93,8 @@ public class ClamAvRecorderConfigSubmitTest  {
  
         HtmlPage p = webClient.goTo("configure");
         HtmlForm form = p.getFormByName("config");
-        form.getInputByName("host").setValueAttribute("localhost");
-        form.getInputByName("port").setValueAttribute("9999");
+        form.getInputByName("host").setValue("localhost");
+        form.getInputByName("port").setValue("9999");
         synchronized (p) {
             p.wait(500);
         }
@@ -108,8 +108,8 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckHost_NoHost() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm form = p.getFormByName("config");
-        form.getInputByName("host").setValueAttribute("");
-        form.getInputByName("port").setValueAttribute("9999");
+        form.getInputByName("host").setValue("");
+        form.getInputByName("port").setValue("9999");
         synchronized (p) {
             p.wait(500);
         }
@@ -123,8 +123,8 @@ public class ClamAvRecorderConfigSubmitTest  {
 
         HtmlPage p = webClient.goTo("configure");
         HtmlForm form = p.getFormByName("config");
-        form.getInputByName("host").setValueAttribute("localhost");
-        form.getInputByName("port").setValueAttribute("9998");
+        form.getInputByName("host").setValue("localhost");
+        form.getInputByName("port").setValue("9998");
         synchronized (p) {
             p.wait(500);
         }
@@ -135,8 +135,8 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckHost_NegativePort() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm form = p.getFormByName("config");
-        form.getInputByName("host").setValueAttribute("localhost");
-        form.getInputByName("port").setValueAttribute("-1");
+        form.getInputByName("host").setValue("localhost");
+        form.getInputByName("port").setValue("-1");
         synchronized (p) {
             p.wait(500);
         }
@@ -147,8 +147,8 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckHost_OutOfRangPort() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("65536");
+        f.getInputByName("host").setValue("localhost");
+        f.getInputByName("port").setValue("65536");
         synchronized (p) {
             p.wait(500);
         }
@@ -159,8 +159,8 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckHost_NotIntegerPort() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("port");
+        f.getInputByName("host").setValue("localhost");
+        f.getInputByName("port").setValue("port");
         synchronized (p) {
             p.wait(500);
         }
@@ -174,9 +174,9 @@ public class ClamAvRecorderConfigSubmitTest  {
 
         HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("9999");
-        f.getInputByName("timeout").setValueAttribute("5000");
+        f.getInputByName("host").setValue("localhost");
+        f.getInputByName("port").setValue("9999");
+        f.getInputByName("timeout").setValue("5000");
         synchronized (p) {
             p.wait(500);
         }
@@ -187,9 +187,9 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckTimeout_NegativeTimeout() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("9998");
-        f.getInputByName("timeout").setValueAttribute("-1");
+        f.getInputByName("host").setValue("localhost");
+        f.getInputByName("port").setValue("9998");
+        f.getInputByName("timeout").setValue("-1");
         synchronized (p) {
             p.wait(500);
         }
@@ -200,9 +200,9 @@ public class ClamAvRecorderConfigSubmitTest  {
     public void testDoCheckTimeout_NotIntegerTimeout() throws Exception {
         HtmlPage p = webClient.goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByName("host").setValueAttribute("localhost");
-        f.getInputByName("port").setValueAttribute("9998");
-        f.getInputByName("timeout").setValueAttribute("timeout");
+        f.getInputByName("host").setValue("localhost");
+        f.getInputByName("port").setValue("9998");
+        f.getInputByName("timeout").setValue("timeout");
         synchronized (p) {
             p.wait(500);
         }
